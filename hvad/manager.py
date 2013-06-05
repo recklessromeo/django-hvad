@@ -655,7 +655,6 @@ class FallbackQueryset(QuerySet):
         # note that this query is *BIG* and might return a lot of data, but it's
         # arguably faster than running one query for each result or even worse
         # one query per result per language until we find something
-        
         translations_manager = self.model._meta.translations_model.objects
         baseqs = translations_manager.select_related('master')
         translations = baseqs.filter(language_code__in=fallbacks,
@@ -676,7 +675,14 @@ class FallbackQueryset(QuerySet):
             # if we found a translation, yield the combined result
             if translation:
                 #original:
-                yield combine(translation, self.model)
+                #yield combine(translation, self.model)
+                #dm: in subclass ineritance retrive child model intead of parent( with translations ) : test in childs modeladmin 
+                combined = translation.master
+                opts = combined._meta
+                #TODO: better implementation of retrying original child inheritance
+                combined = self.model.objects.get(id=combined.id)
+                setattr(combined, opts.translations_cache, translation)
+                yield combined
             else:
                 # otherwise yield the shared instance only
                 logger.error("no translation for %s.%s (pk=%s)" % (instance._meta.app_label, instance.__class__.__name__, str(instance.pk)))
