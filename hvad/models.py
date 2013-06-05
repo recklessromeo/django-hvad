@@ -319,7 +319,7 @@ class TranslatableModel(models.Model):
 
         setattr(self, self._meta.translations_cache, any_language)
         return getattr(any_language, name, default)
-    
+
     def get_available_languages(self):
         manager = self._meta.translations_model.objects
         return manager.filter(master=self).values_list('language_code', flat=True)
